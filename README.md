@@ -4,7 +4,7 @@ UAVBERRY will let you control a Parrot Mambo Drone with Raspberry PI 3 B.
 
 Front Camera pictures are processed to scan QRCodes.
 
-The project is still *beta* stage.
+This project is still *beta* stage.
 
 Command to create the docker test environment:
 * docker-compose up --build
