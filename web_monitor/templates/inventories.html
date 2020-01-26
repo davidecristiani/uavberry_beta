@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+
+
+<h1>Inventories</h1>
+
+{% for inventory in inventories %}
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">{{ inventory.file }}</h3>
+  </div>
+  <div class="card-body">
+
+{% if inventory.ots == "true" %}
+<h6><i class="fe fe-lock"></i> This file is Blochain Timestamped with Digest File: {{ inventory.file }}.ots</h6>
+{% endif %}
+
+<h6><i class="fe fe-clock"></i> Inventory Time:  {{ inventory.time }}<h6>
+<h6><i class="fe fe-thermometer"></i> Inventory Temperature:  {{ inventory.temperature }}° celsius<h6>
+
+
+<!-- {{ inventory }} -->
+  <table class="table table-bordered">
+    <tr>
+      <th>Name</th>
+      <th>SKU</th>
+      <th>Status</th>
+      <th>Minimum_Temperature</th>
+      <th>Maximum_Temperature</th>
+      <th>Temperature_Diagnosis</th>
+    </tr>
+    {% for product in inventory.products %}
+    <tr>
+      <td><b>{{ product.n }}</b></td>
+      <td>ID{{ product.i }}</td>
+      <td><nobr>
+        {% if product.s == 1  %}
+          IN STOCK
+        {% elif product.s == 2  %}
+          SCHEDULED
+        {% elif product.s == 3  %}
+          NOT AVAILABLE
+        {% endif  %}
+</nobr>
+        </td>
+      <td>{{ product.m }}° celsius</td>
+      <td>{{ product.g }}° celsius</td>
+      <td>
+        {% if inventory.temperature|int > product.g|int  %}
+          <div class="text-danger">Warehouse too hot</div>
+        {% elif inventory.temperature | int < product.m |int  %}
+          <div class="text-primary">Warehouse too cold</div>
+        {% else %}
+        <div class="text-secondary">Ok</div>
+
+          {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+
+  </table>
+
+  </div>
+  </div>
+
+{% endfor %}
+
+
+
+
+{% endblock %}

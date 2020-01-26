@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+  <head>
+    {% block head %}
+    <title>UAVBERRY</title>
+    {% endblock %}
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+
+<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+
+
+        <link href="https://tabler.github.io/tabler/assets/css/dashboard.css" rel="stylesheet">
+        <script src="https://tabler.github.io/tabler/assets/js/dashboard.js"></script>
+
+  </head>
+
+  <body class="">
+    <div class="page">
+      <div class="flex-fill">
+
+
+
+        <div class="header py-4">
+          <div class="container">
+            <div class="d-flex">
+              <a class="header-brand" href="/">
+  UAVBERRY WEB MONITOR
+              </a>
+
+
+              <div class="d-flex order-lg-2 ml-auto">
+
+                <div class="d-none d-md-flex">
+                  <a href="/" class="nav-link icon">
+                    Home
+                  </a>
+                </div>
+
+                <div class="d-none d-md-flex">
+                  <a href="/front" class="nav-link icon">
+                    Front Images
+                  </a>
+                </div>
+
+                <div class="d-none d-md-flex">
+                  <a href="/ground" class="nav-link icon">
+                    Ground Images
+                  </a>
+                </div>
+
+                <div class="d-none d-md-flex">
+                  <a href="/inventories" class="nav-link icon">
+                    Inventories
+                  </a>
+                </div>
+
+
+
+              </div>
+
+            </div>
+
+
+
+
+
+          </div>
+        </div>
+
+
+    <div class="container mt-5 mb-5" id="content">{% block content %}{% endblock %}</div>
+    <footer class="footer">
+      <div class="container">
+        <div class="row align-items-center flex-row-reverse">
+          <div class="col-auto ml-lg-auto">
+            <div class="row align-items-center">
+              <div class="col-auto">
+                <ul class="list-inline list-inline-dots mb-0">
+                  <li class="list-inline-item"><a href="#">Documentation</a></li>
+                  <li class="list-inline-item"><a href="/about">About</a></li>
+                </ul>
+              </div>
+              <div class="col-auto">
+                <a href="#" class="btn btn-outline-primary btn-sm">Source code</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-auto mt-3 mt-lg-0 text-center">
+            Copyright © 2019 Davide Cristiani. All rights reserved.
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+</div>
+</body>
+</html>

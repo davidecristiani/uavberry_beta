@@ -1,0 +1,297 @@
+from pyzbar.pyzbar import decode
+from PIL import Image,ImageDraw
+import ntpath
+import json
+import os
+from enum import Enum
+import time
+import qrcode
+from datetime import datetime
+
+current_path = os.path.abspath(os.path.dirname(__file__))
+
+#   Folder were we put JSON models to be converted
+JSON_MODELS_FOLDER = os.path.join(current_path, "product_models/")
+#   Folder were we put JSON -> QRCode images
+QR_CODES_FOLDER = os.path.join(current_path, "images_inventory/")
+#   Folder were to store inventory.json storage support
+INVENTORY_DB_PATH = os.path.join(current_path, "inventories/")
+#   Folder where to store backup copies of inventory.json
+INVENTORY_DB_BACKUP_PATH = os.path.join(current_path, "../web_monitor/inventories/")
+
+"""
+
+#   Product data model
+
+{
+  "product_id": 1,
+  "status": 1|2|3,
+  "product_data": {
+    "name": "string",
+    "product_code": "string",
+    "description": "string",
+    "seller": "string",
+    "price": 10.0,
+    "min_temperature": 5.0,
+    "max_temperature": 25.0
+  },
+  "supplier_data": {
+    "name": "string",
+    "email": "string",
+    "endpoint": "http://supply.me/<product_code>/<stocks_number>"
+  }
+}
+
+"""
+
+
+
+class Availability(Enum):
+    AVAILABLE = 1,
+    SCHEDULED = 2,
+    NOT_AVAILABLE = 3
+
+
+
+class Product:
+
+    def __init__(self, json):
+        self.product_id = json['product_id']
+        self.product_data = {}
+        self.status = json['status']
+        self.product_data['name'] = json['product_data']['name']
+        self.product_data['product_code'] = json['product_data']['product_code']
+        self.product_data['description'] = json['product_data']['description']
+        self.product_data['seller'] = json['product_data']['seller']
+        self.product_data['price'] = json['product_data']['price']
+        self.product_data['min_temperature'] = json['product_data']['min_temperature']
+        self.product_data['max_temperature'] = json['product_data']['max_temperature']
+        self.supplier_data = {}
+        self.supplier_data['name'] = json['supplier_data']['name']
+        self.supplier_data['email'] = json['supplier_data']['email']
+        self.supplier_data['endpoint'] = json['supplier_data']['endpoint']
+
+    def get_status(self):
+        if(self.status == 1):
+            return Availability.AVAILABLE
+        elif(self.status == 2):
+            return Availability.SCHEDULED
+        else:
+            return Availability.NOT_AVAILABLE
+
+
+
+class Inventory:
+
+    db_name = INVENTORY_DB_PATH + "inventory.json"
+    backup_db_name = INVENTORY_DB_BACKUP_PATH + "inventory.json"
+
+    def __init__(self):
+        self.db_name = INVENTORY_DB_PATH + "inventory-" + str(datetime.now()) + ".json"
+        self.backup_db_name = INVENTORY_DB_BACKUP_PATH + "inventory-" + str(datetime.now()) + ".json"
+        if not os.path.exists(self.db_name):
+            data = {}
+            data['products'] = []
+            f = open(self.db_name, "w+")
+            f.write(json.dumps(data))
+
+    #
+    #   Populate inventory with test data, simulates a drone scanning
+    #
+    def populate_inventory_from_json_models(self):
+        for files in sorted(os.listdir(JSON_MODELS_FOLDER)):
+            with open(JSON_MODELS_FOLDER + str(files)) as json_str:
+                self.ingest_json(json_str.read())
+
+    #
+    #   Ingest a new json to add to the inventory (also creates its QR code)
+    #
+    def ingest_json(self, json_str):
+        product = Product(json.loads(json_str))
+        label = product.product_data['name'] + "-" + str(product.get_status())
+        image_path = QR_CODES_FOLDER + label + '.png'
+        i = 1
+        while os.path.exists(image_path):
+            image_path = QR_CODES_FOLDER + label + '-' + str(i) + '.png'
+            i = i + 1
+        qr = qrcode.QRCode(
+            version = None,
+            error_correction = qrcode.constants.ERROR_CORRECT_L,
+            box_size = 10,
+            border = 8,
+        )
+        qr.add_data(json_str)
+        qr.make(fit = True)
+        qr.make_image(fill_color = "black", back_color = "white").save(image_path)
+        image = Image.open(image_path)
+        draw = ImageDraw.Draw(image)
+        width, height = image.size
+        w, h = draw.textsize(label)
+        draw.text(((width - w) / 2, (height - height + h * 2)), label, fill = "black")
+        image.save(image_path)
+        self.ingest_image(image_path, None)
+
+    #
+    #   Ingest a new image to scan inventory population
+    #
+    def ingest_image(self, image_path, image_output_dir):
+        products = self.product_detection(image_path, image_output_dir)
+        for product in products:
+            if not self.__is_in_inventory(product):
+                self.__add_to_inventory(product)
+            elif not self.__is_product_updated(product):
+                self.__update_product(product)
+
+    #
+    #
+    #
+    def get_products(self):
+        products = list()
+        with open(self.db_name) as json_file:
+            data = json.load(json_file)
+
+            for p in data['products']:
+                products.append(Product(p))
+        return products
+
+    #
+    #   Close inventory and backup it
+    #
+    def close_inventory(self, temperature):
+        with open(self.db_name) as json_file:
+            data = json.load(json_file)
+
+        with open(self.backup_db_name, 'w') as outfile:
+            json.dump(data, outfile)
+        # TODO: add flags depending on temperature fields
+
+    #
+    #   Send restock requests to all items that are missing in the inventory
+    #
+    def send_stock_requests(self):
+        with open(self.db_name) as json_file:
+            data = json.load(json_file)
+
+            for p in data['products']:
+                if p['status'] == 3:
+                    # HTTP to p['supplier']['endpoint']
+                    p['status'] = 2
+
+        with open(self.db_name, 'w') as outfile:
+            json.dump(data, outfile)
+
+    #
+    #   Clean supply request when new supplies for a given product arriva to the inventory
+    #
+    def stock_arrived(self):
+        with open(self.db_name) as json_file:
+            data = json.load(json_file)
+
+            for p in data['products']:
+                if p['status'] == 2:
+                    p['status'] = 1
+
+        with open(self.db_name, 'w') as outfile:
+            json.dump(data, outfile)
+
+    #
+    #   Check if a product is already in the inventory
+    #
+    def __is_in_inventory(self, product):
+        with open(self.db_name) as json_file:
+            data = json.load(json_file)
+            for p in data['products']:
+                if p['product_id'] == product.product_id:
+                    return True
+        return False
+
+    #
+    #   Check if supply alert was already noticed for a gived product
+    #
+    def __is_product_updated(self, product):
+        with open(self.db_name) as json_file:
+            data = json.load(json_file)
+            for p in data['products']:
+                if p['product_id'] == product.product_id:
+                    if p['status'] == product.status == 1:
+                        return True
+                    elif p['status'] == product.status == 3:
+                        return True
+                    elif p['status'] == 2 and product.status == 3:
+                        return True
+        return False
+
+    #
+    #   Add a new product to the inventory
+    #
+    def __add_to_inventory(self, product):
+        with open(self.db_name) as json_file:
+            data = json.load(json_file)
+
+            data['products'].append(product.__dict__)
+
+        with open(self.db_name, 'w') as outfile:
+            json.dump(data, outfile)
+
+    #
+    #   Add supply alert for a given product
+    #
+    def __update_product(self, product):
+        with open(self.db_name) as json_file:
+            data = json.load(json_file)
+
+            for p in data['products']:
+                if p['product_id'] == product.product_id:
+                    p['status'] = product.status
+
+        with open(self.db_name, 'w') as outfile:
+            json.dump(data, outfile)
+
+    #
+    #   Get the list of available Product models in the image
+    #
+    def product_detection(self, image_path, image_output_dir):
+        qr_codes = self.qr_codes_detection(image_path, image_output_dir)
+        products = list()
+        if(qr_codes is None):
+            return products
+        for qrc in qr_codes:
+            try:
+                qr_json = json.loads(qrc)
+                products.append(Product(qr_json))
+            except ValueError as e:
+                print(str(e))
+                None
+        return products
+
+    #
+    #   Get the list of QRcade data available in the image to be processed
+    #
+    def qr_codes_detection(self, image_to_scan_path, image_output_dir):
+        image = Image.open(image_to_scan_path)
+        if (image_output_dir):
+            image.save(image_output_dir + 'source/' + ntpath.basename(image_to_scan_path))
+        decoded_data = decode(image)
+        qrs = list()
+        for qrcoded in decoded_data:
+            qrs.append(qrcoded.data)
+            if (image_output_dir):
+                draw = ImageDraw.Draw(image)
+                rect = qrcoded.rectangle
+                draw.rectangle(((rect.left, rect.top), (rect.left + rect.width, rect.top + rect.height)), outline='#0080ff')
+                draw.polygon(qrcoded.polygon, outline='#e945ff')
+                image.save(image_output_dir + 'final/' + ntpath.basename(image_to_scan_path))
+        return qrs
+
+    #
+    #   Debug function to get QRCodes pixel area
+    #
+    def PolygonArea(self, corners):
+        n = len(corners) # of corners
+        area = 0.0
+        for i in range(n):
+            j = (i + 1) % n
+            area += corners[i][0] * corners[j][1]
+            area -= corners[j][0] * corners[i][1]
+        area = abs(area) / 2.0
+        return area

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+
+
+<h2>Last processed ground image</h2>
+   <table class="table table-bordered">
+<tr>
+  <td width="25%">  <img width="100%" src="/output_ground_images/source/{{ last_ground_image }}" ></td>
+  <td  width="25%">  <img width="100%" src="/output_ground_images/black/{{ last_ground_image }}" ></td>
+  <td  width="25%">  <img width="100%" src="/output_ground_images/mask/{{ last_ground_image }}" ></td>
+  <td  width="25%">  <img width="100%"  src="/output_ground_images/final/{{ last_ground_image }}" ></td>
+
+</tr>
+   </table>
+
+
+   <h2>Last processed front image</h2>
+      <table class="table table-bordered">
+   <tr>
+     <td width="50%">  <img width="100%" src="/output_front_images/source/{{ last_front_image }}" ></td>
+     <td width="50%">  <img width="100%" src="/output_front_images/final/{{ last_front_image }}" ></td>
+
+
+   </tr>
+      </table>
+
+
+
+
+
+{% endblock %}

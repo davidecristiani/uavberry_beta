@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+
+
+<h1>Ground images</h1>
+  <table class="table table-bordered">
+  {% for last_ground_image in all_ground_image_source %}
+
+    <tr>
+    <td width="25%">
+
+      <button type="button" class="btn" data-toggle="modal" data-target="#modal_source_{{ last_ground_image | replace('.','') }}">
+          <img width="100%" src="/output_ground_images/source/{{ last_ground_image }}" >
+        </button>
+
+        <div class="modal fade" id="modal_source_{{ last_ground_image | replace('.','') }}" tabindex="-1" role="dialog" aria-labelledby="modal_source_{{ last_ground_image | replace('.','') }}_label" aria-hidden="true">
+          <div class="modal-dialog  modal-xl" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modal_source_{{ last_ground_image | replace('.','') }}_label">{{ last_front_image }}</h5>
+                <button type="button" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <img width="100%" src="/output_ground_images/source/{{ last_ground_image }}" >
+              </div>
+            </div>
+          </div>
+        </div>
+
+     </td>
+    <td  width="25%">
+
+      <button type="button" class="btn" data-toggle="modal" data-target="#modal_black_{{ last_ground_image | replace('.','') }}">
+          <img width="100%" src="/output_ground_images/black/{{ last_ground_image }}" >
+        </button>
+
+        <div class="modal fade" id="modal_black_{{ last_ground_image | replace('.','') }}" tabindex="-1" role="dialog" aria-labelledby="modal_black_{{ last_ground_image | replace('.','') }}_label" aria-hidden="true">
+          <div class="modal-dialog  modal-xl" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modal_black_{{ last_ground_image | replace('.','') }}_label">{{ last_front_image }}</h5>
+                <button type="button" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <img width="100%" src="/output_ground_images/black/{{ last_ground_image }}" >
+              </div>
+            </div>
+          </div>
+        </div>
+
+     </td>
+    <td  width="25%">
+
+      <button type="button" class="btn" data-toggle="modal" data-target="#modal_mask_{{ last_ground_image | replace('.','') }}">
+          <img width="100%" src="/output_ground_images/mask/{{ last_ground_image }}" >
+        </button>
+
+        <div class="modal fade" id="modal_mask_{{ last_ground_image | replace('.','') }}" tabindex="-1" role="dialog" aria-labelledby="modal_mask_{{ last_ground_image | replace('.','') }}_label" aria-hidden="true">
+          <div class="modal-dialog  modal-xl" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modal_mask_{{ last_ground_image | replace('.','') }}_label">{{ last_front_image }}</h5>
+                <button type="button" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <img width="100%" src="/output_ground_images/mask/{{ last_ground_image }}" >
+              </div>
+            </div>
+          </div>
+        </div>
+
+    </td>
+    <td  width="25%">
+
+      <button type="button" class="btn" data-toggle="modal" data-target="#modal_final_{{ last_ground_image | replace('.','') }}">
+          <img width="100%" src="/output_ground_images/final/{{ last_ground_image }}" >
+        </button>
+
+        <div class="modal fade" id="modal_final_{{ last_ground_image | replace('.','') }}" tabindex="-1" role="dialog" aria-labelledby="modal_final_{{ last_ground_image | replace('.','') }}_label" aria-hidden="true">
+          <div class="modal-dialog  modal-xl" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modal_final_{{ last_ground_image | replace('.','') }}_label">{{ last_front_image }}</h5>
+                <button type="button" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <img width="100%" src="/output_ground_images/final/{{ last_ground_image }}" >
+              </div>
+            </div>
+          </div>
+        </div>
+
+    </td>
+    </tr>
+
+  {% endfor %}
+  </table>
+
+
+
+
+
+
+{% endblock %}

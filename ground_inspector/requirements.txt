@@ -1,0 +1,9 @@
+opencv-python
+imutils
+numpy
+argparse
+scipy
+pillow
+imagehash
+pyzbar
+qrcode

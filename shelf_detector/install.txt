@@ -1,0 +1,11 @@
+sudo apt install libjpeg8-dev zlib1g-dev
+sudo apt-get install libzbar0
+
+brew install zbar
+
+virtualenv e
+source e/bin/activate
+pip install -r requirements.txt
+
+
+f07d32bbce7b0cbdfe129085e53ea0e41a27c18a
